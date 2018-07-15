@@ -1,0 +1,2 @@
+https://datascience.stackexchange.com/questions/8847/feature-extraction-of-images-in-python
+
