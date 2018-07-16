@@ -17,7 +17,8 @@ def get_imgMatrix_from_id(image_id, image_dir="../data/preprocessed_data/Train",
     image = cv2.imread(image_loc)
     return image
     
-    
+def get_filename_from_id(image_id, image_dir="../data/preprocessed_data/Train", filetype=".png"):
+    return image_dir + "/" + image_id + "" + filetype
 
 #return the breed associated with an id
 def get_breed_from_id(id, filename="../data/included/labels.csv"):
