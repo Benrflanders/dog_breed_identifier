@@ -7,6 +7,7 @@ from utils.general_utils import get_imgMatrix_from_id, get_id_from_filename, pop
 
 #convert a directory of pre-processed images into a pandas dataframe for easy use with tensorflow
 def dataFrameBuilder(data_amount=None,
+                     start_index=None,
                      dir="../data/preprocessed_data/Train/"):
     df = pd.DataFrame(columns=['ID', 'Image Data', 'Breed'])
     d = []
