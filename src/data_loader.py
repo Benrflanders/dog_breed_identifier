@@ -6,10 +6,12 @@ from utils.general_utils import get_imgMatrix_from_id, get_id_from_filename, pop
 
 
 #convert a directory of pre-processed images into a pandas dataframe for easy use with tensorflow
-def dataFrameBuilder(data_amount=None,
-                     start_index=None,
+def dataFrameBuilder(data_amount=100,
+                     start_index=0,
+                     ret_input=True,
+                     ret_output=False,
                      dir="../data/preprocessed_data/Train/"):
-    df = pd.DataFrame(columns=['ID', 'Image Data', 'Breed'])
+    #df = pd.DataFrame(columns=['ID', 'Image Data', 'Breed'])
     d = []
 
     BREED_LIST = "../data/preprocessed_data/breed_list.csv"  
@@ -20,39 +22,27 @@ def dataFrameBuilder(data_amount=None,
             
     data_files = os.listdir(dir) #get a list of all filenames from Train dir
 
-    f = 0
-    counter = 0
+    f = 0        #current file
+    counter = 0  #loop counter
     
+    #while != last file
     for file in data_files:
         f +=1
-        print("File: " , f)
+        #print("File: " , f)
         
         file_id = get_id_from_filename(file)
         data = get_imgMatrix_from_id(file_id)
         breed_matrix = get_label_array_from_id(file_id, labels_np)
-        
-        d.append({'ID': file_id, 'Image Data': data, 'Breed': breed_matrix})
-        
-        if(counter > 10): #every 10 indexes in order to preserve ram
-            df_temp = pd.DataFrame(d, columns=['ID', 'Image Data', 'Breed']) #store list in a temp dataframe            
+        if(ret_input):
+            d.append(data)
+            counter += 1
+        if(ret_output):
+            d.append(breed_matrix)
+            counter+=1
             
-            df = pd.concat([df, df_temp]) #concatenate the temp df onto the end of df
-            
-            d = [] #clear the list 
-            counter = 0 #restart the counter
-            
-        
-        if(data_amount != None and data_amount >= f):
-            df_temp = pd.DataFrame(d, columns=['ID', 'Image Data', 'Breed']) #store list in a temp dataframe            
-            
-            df = pd.concat([df, df_temp]) #concatenate the temp df onto the end of df
-            
-            d = [] #clear the list             
-            
+        if(counter >= data_amount): #if data loaded into ram == data_amount, return loaded data as a dataframe
+            #df = pd.DataFrame(d, columns=['ID', 'Image Data', 'Breed']) #store list in a temp dataframe            
+            return d
             break
-    
-    df_temp = pd.DataFrame(d) #initialize the DataFrame
-    df = pd.concat([df, df_temp])
-    df_temp = None
-    
-    return df
+           
+    return d
