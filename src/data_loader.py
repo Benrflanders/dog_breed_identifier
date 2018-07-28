@@ -27,7 +27,6 @@ def dataFrameBuilder(data_amount=100,
     
     #while != last file
     for file in data_files:
-        f +=1
         #print("File: " , f)
         
         file_id = get_id_from_filename(file)
@@ -44,5 +43,8 @@ def dataFrameBuilder(data_amount=100,
             #df = pd.DataFrame(d, columns=['ID', 'Image Data', 'Breed']) #store list in a temp dataframe            
             return d
             break
+            
+        f +=1
+
            
     return d
