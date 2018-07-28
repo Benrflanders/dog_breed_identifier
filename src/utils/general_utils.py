@@ -17,7 +17,8 @@ def get_imgMatrix_from_id(image_id, image_dir="../data/preprocessed_data/Train",
     image = cv2.imread(image_loc)
     return image
     
-    
+def get_filename_from_id(image_id, image_dir="../data/preprocessed_data/Train", filetype=".png"):
+    return image_dir + "/" + image_id + "" + filetype
 
 #return the breed associated with an id
 def get_breed_from_id(id, filename="../data/included/labels.csv"):
@@ -80,9 +81,24 @@ def get_breed_value_from_id(id, labels_list, filename="../data/included/labels.c
     #return a single integer
     return target_value
 
-
-
-
+#takes in an id, retrieves the breed of that id, then returns an array 
+#with a single 1 in the corresponding index of that breed
+def get_label_array_from_id(id, labels_list, filename="../data/included/labels.csv"):
+    breed_name = get_breed_from_id(id, filename) #get the breed name of the current id
+    
+    label_array = [] #the array that will be returned
+    
+    for i in range(len(labels_list)):
+        if(labels_list[i] == breed_name): #each sample will only have one instance where this is true
+            label_array.append(1)
+        else:
+            label_array.append(0)
+    return label_array
+    
+    
+    
+    
+    
 #get the number of files in a directory
 def count_files(dir="data/Train"):
 
