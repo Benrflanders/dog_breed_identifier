@@ -30,12 +30,13 @@ def dataFrameBuilder(data_amount=100,
         #print("File: " , f)
         
         file_id = get_id_from_filename(file)
-        data = get_imgMatrix_from_id(file_id)
-        breed_matrix = get_label_array_from_id(file_id, labels_np)
+        
         if(ret_input):
+            data = get_imgMatrix_from_id(file_id, image_dir=dir)
             d.append(data)
             counter += 1
         if(ret_output):
+            breed_matrix = get_label_array_from_id(file_id, labels_np)
             d.append(breed_matrix)
             counter+=1
             
