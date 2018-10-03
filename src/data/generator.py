@@ -67,12 +67,39 @@ class generator():
 
     def get_testing_data(self):
         #get from test_list.mat
-
-        return True
-
-    def shuffle_data(self):
+        os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+        file_list = os.listdir('../data/processed/test_images/')
+        self.shuffle(file_list)
+    
+        X = []
+        y = []
         
+        counter = 0
+        while True:
+            curr_file = file_list[counter]
+            curr_file_id = get_id_from_filename(curr_file)
+            
+            curr_file_matrix = get_imgMatrix_from_id(curr_file_id, image_dir=self.test_dir)
+            
+            curr_file_label = get_breed_value_from_id(curr_file_id, self.labels, self.test_list)
+
+            X.append(curr_file_matrix)
+            y.append(curr_file_label)
+            counter += 1
+            if((counter % self.batch_size) == 0):
+                yield X, y
+                X = []
+                y = []
+            if(counter == len(file_list)-1):
+                X = []
+                y = []
+                break
+
         return True
+
+    def shuffle_data(self, file_list):
+        
+        return shuffle(file_list)
 
     def data_generator(self):
         while True:
