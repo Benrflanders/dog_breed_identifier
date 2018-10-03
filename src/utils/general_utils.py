@@ -6,6 +6,8 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 import cv2 #used for image to matrix conversion
+from scipy.io import loadmat
+
 
 def get_imgMatrix_from_id(image_id, image_dir="../data/preprocessed_data/Train", filetype=".png"):
     image_loc = image_dir + "/" + image_id + "" + filetype
@@ -15,71 +17,78 @@ def get_imgMatrix_from_id(image_id, image_dir="../data/preprocessed_data/Train",
     #resized_img = tf.image.resize_images(image,(32,32)) #resize all images to 250x250
     
     image = cv2.imread(image_loc)
+    image = np.array(image)
+    image = np.expand_dims(image, axis = 0) #add a dimension for keeping track of the batch index
     return image
     
 def get_filename_from_id(image_id, image_dir="../data/preprocessed_data/Train", filetype=".png"):
     return image_dir + "/" + image_id + "" + filetype
 
-#return the breed associated with an id
-def get_breed_from_id(id, filename="../data/included/labels.csv"):
-    
-    #access training data labels from labels.csv
-    training_data = pd.read_csv(filename)
-    
-    #get the one row where the id is the id supplied
-    #training_data[training_data['id'].str.match(id)]
-    id_row = training_data[training_data['id'].str.match(id)]
-    
-    #get the breed from that row
-    breed_name = id_row['breed'].values
-    
-    return breed_name
+def get_breed_from_id(id, file_list):
+    mat = loadmat(file_list)
+    for file in mat.get('file_list'):
+        curr_id = (file[0][0]).split('/')
+        curr_id = get_id_from_filename(curr_id[1])
+        
+        if(id == curr_id):
+            breed = (file[0][0]).split('/')[0]
+            breed = ''.join(breed.split('-')[1:])
+            return breed.lower()
 
-def get_breed_value_from_id(id, labels_list, filename="../data/included/labels.csv"):
+
+#generate a list that contains the id of a breed paired with its actual breed name
+def generate_breed_list(dir_name = '../data/raw/Images/'):
+    folders = os.listdir(dir_name)
+    index = 0
+
+    breed_dict = []
     
-    breed_name = get_breed_from_id(id, filename) #get the breed name of the current id
+    while index < len(folders):
+        if(folders[index][0] == '.'):
+            folders[index].pop() #if it is a hidden file, don't include it
+
+        #breed_id, breed_name = folders[index].split('-')
+        split = folders[index].split('-')
+
+        breed_id = split[0]
+        breed_name = ''.join(split[1:])
+        
+        print("id: ", breed_id)
+        #breed_dict.append("breed_id" = breed_id, "breed_name" = breed_name)
+        print("name: ", breed_name)
+        breed_list.append([breed_id, breed_name])
+        index+= 1
+        
+        
+        
+        
+#commonly used*********** careful changing this
+def get_breed_value_from_id(id, labels_list, file_list):
+    
+    breed_name = get_breed_from_id(id, file_list) #get the breed name of the current id
     #print("breed_name: " + breed_name) #testing... delete this line 
     
     target_array = [0.0] * len(labels_list)        
     
     target_value = 0
-    
     #features/labels are coded from [0,len(labels_list)]
     
     for i in range(len(labels_list)):
         if(labels_list[i] == breed_name): #each sample will only have one instance where this is true
             target_array[i] = 1.0
-            
-            #need a better option than just multiplying by i... look into using prime numbers
-            target_value = i * 1.0
-            
-            
-            
-    '''
-    
-    it = np.nditer(labels_list)
-    while not it.finished:
-        #print("index is %s... %s" % (it.index, it[0]))
-        if(it[0] == breed_name):
-            target_array[it.index] = 1.0
-        
-        it.iternext()
-        
-    '''
-    '''
-    #target_array = np.zeros(len(labels_list))
+            target_array = np.array(target_array)
+            target_array = np.expand_dims(target_array, axis = 0) #add a dimension for keeping track of the batch index
 
-    for index, iterindex in np.nditer(labels_list): #index contains the name of the dog breed, 
-        print(index)
-        if(index == breed_name):
-            print("TRUE!")
-            print(iterindex)
-            target_array[iterindex] = 1.0
-        #if(labels_list[index] == breed_name):
-            #target_array[index] = 1.0
-    '''          
+            
+            #return np.reshape(target_array, [120,1])
+            return target_array
+    print("breed name: ", breed_name)
     #return a single integer
-    return target_value
+    return target_array
+
+
+
+
 
 #takes in an id, retrieves the breed of that id, then returns an array 
 #with a single 1 in the corresponding index of that breed
@@ -114,9 +123,13 @@ def count_files(dir="data/Train"):
     
     return counter
 
-def get_id_from_filename(file):
+def get_id_from_filename_old(file):
     return file.rsplit(".",1)[0]
 
+
+def get_id_from_filename(file):
+    return file.split('.')[0]
+    
 def get_random_id(dir="../data/included/Train"):
     data_files = os.listdir(dir)    
     random_num = np.random.randint(0,high=len(data_files))
@@ -149,4 +162,6 @@ def get_num_training_files_per_breed(breed_list):
                 breed_occur[breed] += 1
             
     return breed_occur
+
+
 
