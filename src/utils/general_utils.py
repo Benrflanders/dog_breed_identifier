@@ -17,6 +17,8 @@ def get_imgMatrix_from_id(image_id, image_dir="../data/preprocessed_data/Train",
     #resized_img = tf.image.resize_images(image,(32,32)) #resize all images to 250x250
     
     image = cv2.imread(image_loc)
+    image = np.array(image)
+    image = np.expand_dims(image, axis = 0) #add a dimension for keeping track of the batch index
     return image
     
 def get_filename_from_id(image_id, image_dir="../data/preprocessed_data/Train", filetype=".png"):
@@ -60,7 +62,7 @@ def generate_breed_list(dir_name = '../data/raw/Images/'):
         
         
         
-
+#commonly used*********** careful changing this
 def get_breed_value_from_id(id, labels_list, file_list):
     
     breed_name = get_breed_from_id(id, file_list) #get the breed name of the current id
@@ -74,11 +76,19 @@ def get_breed_value_from_id(id, labels_list, file_list):
     for i in range(len(labels_list)):
         if(labels_list[i] == breed_name): #each sample will only have one instance where this is true
             target_array[i] = 1.0
+            target_array = np.array(target_array)
+            target_array = np.expand_dims(target_array, axis = 0) #add a dimension for keeping track of the batch index
+
+            
+            #return np.reshape(target_array, [120,1])
             return target_array
-        
     print("breed name: ", breed_name)
     #return a single integer
     return target_array
+
+
+
+
 
 #takes in an id, retrieves the breed of that id, then returns an array 
 #with a single 1 in the corresponding index of that breed
