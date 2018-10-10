@@ -13,7 +13,7 @@ to the processed images folder. Images are either saved to train_images/ or
 test_images/ based upon their location in the 
 '''
 def pre_process_images():
-    os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+    #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
     raw_img_dir = '../data/raw/Images/'
 
     train_images_dir = '../data/processed/train_images/'
@@ -63,7 +63,7 @@ def pre_process_images():
 
 #convert all images to grayscale vectors-- no longer used as NN will be using 500 x 500 x 3 images as input
 def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
-    os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+    #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
 
     file = file_name #store the file name and location  
     image = Image.open(file)
@@ -124,7 +124,7 @@ def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
 
 def is_training_data(filename):
     #get the list of all training dat
-    os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+    #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
     train_list = '../data/raw/train_list.mat'
     mat = loadmat(train_list)
     for file in mat.get('file_list'):
@@ -138,7 +138,7 @@ def is_training_data(filename):
     return False
 
 def is_testing_data(filename):
-    os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+    #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
     test_list = '../data/raw/test_list.mat'
     mat = loadmat(test_list)
     for file in mat.get('file_list'):
