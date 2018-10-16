@@ -3,9 +3,6 @@ import data.generator as generator
 import numpy as np
 import data.pre_process_images as pre_processor
 
-
-
-
 batch_size = 10
 def run():
     model = inception.inception_classifier()
@@ -26,5 +23,5 @@ def main_old():
    pre_process()
 
 
-
+    
 run()

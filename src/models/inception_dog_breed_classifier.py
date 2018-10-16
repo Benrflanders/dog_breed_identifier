@@ -8,9 +8,14 @@ import PIL
 import tensorflow as tf
 
 import data.generator as generator #geneartes a single batch of data
+import utils.general_utils as utils
 
 class inception_classifier():
     def __init__(self):
+
+        self.train = False
+        self.test = False
+        self.load_model = True
         #basic parameters
         self.image_size = 500
         self.batch_size = 4
@@ -37,6 +42,7 @@ class inception_classifier():
         self.gen = generator.generator(self.batch_size)
         
         #build model
+        #if(self.train):
         self.train_model()
 
         #evaulate the model
@@ -47,6 +53,8 @@ class inception_classifier():
 
         #save the model
         #self.save_model()
+
+        quit()
         
         
     def input_layer(self):
@@ -109,8 +117,27 @@ class inception_classifier():
             #    sess.run(train_op)
             run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = False)
   
-            self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='sgd', options=run_opts)
-            self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=3000, epochs=100)
+
+            self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='adam', options=run_opts)
+
+            #save checkpoints of the model during training...
+            i = 0
+            #del self.model
+            #self.model = tf.keras.models.load_model('../models/model_ckpt_6.h5')
+
+            while(i<100): #each 'i' will be 1 epoch, 100 iterations in total
+                            
+
+                #print("Running training for iterations: ", i*10, " to ", i*10+9)
+                print("Running training for epoch: ", i)
+                self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=3000, epochs=1)
+                #self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=2, epochs=1)
+
+                file_name = '../models/model_ckpt_' + str(i) + '.h5'
+                self.model.save(file_name)
+                i+=1
+
+
             #self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=2, epochs=1)
 
             #print("evaluating... \n\n")            
@@ -141,54 +168,67 @@ class inception_classifier():
     def evaluate_model(self):
 
         print("about to start testing :D")
-        
-        with tf.Session() as sess:
-            writer = tf.summary.FileWriter("../Reports/log/", sess.graph)
-            #sess.run(tf.global_variables_initializer())
+        del self.model
+        self.model = tf.keras.models.load_model('../models/model_ckpt_6.h5')
+        total_correct_predictions = 0
+        i = 0
+        while(i< 100):
+            X,y = next(self.gen.generate_training_data())
+            classification = self.model.predict(X, batch_size=4) #get a batch of predictions
 
-            #initialize the main layers
-            #x = self.input_layer()
-            #y = self.output_layer()
-            #y_pred = self.prediction_layer()
-            
-            #train using the train op
-            # for i in range(1000):
-            #    sess.run(train_op)
-              
-            #self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='sgd')
-            #self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=10, epochs=50)
-            
-              
-            writer.close()
+            #check the accuracy of each member of the batch
+            j = 0
+            while(j < 4):
+                pred_classification_top, pred_classification_second, pred_classification_third = utils.get_breed_from_output(classification[j])
+                actual_classification, temp, temp2 = utils.get_breed_from_output(y[0]) #this function gives 3 outputs, but in the actual breed output only the first matters
+                #check if the prediction was correct
+                if(pred_classification_top == actual_classification):
+                    total_correct_predictions += 1
+                elif(pred_classification_second == actual_classification):
+                    total_correct_predictions += 0
+                elif(pred_classification_third == actual_classification):
+                    total_correct_predictions += 0               
+                j+=1
+            i+=1 #run another batch                                                                           
 
-        
-        return self.model.evaluate_generator(self.gen.generate_testing_data(), steps=10)
+        print("Accuracy = ", total_correct_predictions/400)            
+
+         
+        return True
 
     def use_model(self, X=None):
-        #X,y = next(self.gen.generate_testing_data())
-        #X = X[0]
-        #feed_dict = {'input': [X]}
+        print("test text to see if file is being updated at save")
+        if(self.load_model):
+            del self.model
+            self.model = tf.keras.models.load_model('../models/model_ckpt_2.h5')
 
-        X = tf.placeholder(tf.float32, shape=([1, 500,500,3]))
+        #print("testing on a single batch... ")
+        #print a single prediction as well as the expected prediction
+        #X = tf.placeholder(tf.float32, shape=([1, 500,500,3]))
 
-        with tf.Session() as sess:
-            x_temp,y = next(self.gen.generate_testing_data())
-            X = x_temp[0]
-            
-            classification = self.model.predict(X, batch_size=1)
+        #test on training data to check if neural net is overfit
+        X,y = next(self.gen.generate_training_data())
+        #X = [X[0],X[1]]
+        #X = np.vstack(X)
         
-        print("classification: ",classification)
-        print("Actual Classification: ", y[0])
-        return classification
+        #X = np.expand_dims(X, axis=0)
+        classification = self.model.predict(X, batch_size=4)
+        print("classifications: ",classification)
+        print("Predicted Breed for part 1: ", utils.get_breed_from_output(classification[0]))
+        
+        print("Actual Classification part 1: ", y[0])
+        print("Actual Breed: ", utils.get_breed_from_output(y[0]))
 
         
+        print("\nActual Classficiation part 2: ", y[1])
+
     
     def save_model(self):
         self.model.save('../models/model.h5')
         return True
         
     def load_model(self):
-        self.model = tf.keras.models.load_model('../..models/model.h5')
+        self.model = tf.keras.models.load_model('../models/model.h5')
         print(self.model.summary())
         return True
     
