@@ -21,29 +21,40 @@ class inception_classifier():
         self.batch_size = 4
         self.num_classes = 120
         self.train = True
+        self.i = 0
         #self.is_training = tf.placeholder(tf.bool)
         
         #set the input and output placeholders
         #self.X = tf.placeholder(tf.float32, shape=([None, 500,500,3]))
         #self.y = tf.placeholder(tf.float32, shape=([None, 120, 1]))
 
+        
         self.X = tf.keras.layers.Input(shape=(500,500,3), batch_size=self.batch_size,name='input_data',dtype='float32')
         self.y = tf.placeholder(tf.float32, shape=[None, 120,1], name='correct_labels')
         self.y_pred = tf.placeholder(tf.float32, shape=[None,120,1], name='predicted_labels')
         
-        #get inception_v3 neural network classifier
-        self.model = self.get_inception_v3()
+        #get pretrained neural network
+        #self.model = self.get_inception_v3()
+        self.base_model = self.get_inception_resnet_v2()
+        
 
         #update the input and output layers of the model
         #self.update_output_layer()
-        self.model = tf.keras.Model(inputs=self.model.input, outputs=self.generate_output_layer())
+        self.model = tf.keras.Model(inputs=self.base_model.input, outputs=self.generate_output_layer())
+        
 
         #access the generator for use during any training/testing sess
         self.gen = generator.generator(self.batch_size)
         
         #build model
         #if(self.train):
-        self.train_model()
+        if(self.i == 0): #if on the first iteration of training
+            self.initial_train() #train the last nodes on the new output classes
+
+
+        for i, layer in enumerate(self.model.layers):
+            print(i, layer.name)
+        self.train_model() #train the entire model
 
         #evaulate the model
         #self.evaluate_model()
@@ -56,20 +67,7 @@ class inception_classifier():
 
         quit()
         
-        
-    def input_layer(self):
-        x = tf.keras.layers.Input(shape=(500,500,3), batch_size=self.batch_size,name='input_data',dtype='float32')
-        
-        return x
-
-    def output_layer(self):
-        y = tf.placeholder(tf.float32, shape=[None, 120,1], name='correct_labels')
-        return y
-
-    def prediction_layer(self):
-        y_pred = tf.placeholder(tf.float32, shape=[None,120,1], name='predicted_labels')
-        return y_pred
-    
+            
     def get_inception_v3(self):
         inception_v3 = tf.keras.applications.InceptionV3(include_top=False,
                                                 weights='imagenet',
@@ -78,17 +76,41 @@ class inception_classifier():
 
         return inception_v3
 
-    def train_op(self):
-        return None
-
+    def get_inception_resnet_v2(self):
+        inception_resnet_v2 = tf.keras.applications.inception_resnet_v2.InceptionResNetV2(include_top=False,
+                                                                                         weights='imagenet',
+                                                                                         input_tensor=self.X,
+                                                                                         classes=120)
+        return inception_resnet_v2
+                                                                                         
+    
     def generate_output_layer(self):
         #steps for adding a new output layer
-        output_layer = self.model.output
+        output_layer = self.base_model.output
         output_layer = tf.keras.layers.GlobalAveragePooling2D()(output_layer) #replace the current global avg pool 2d
         output_layer = tf.keras.layers.Dense(1024, activation='relu')(output_layer) 
         predictions = tf.keras.layers.Dense(120, activation='softmax')(output_layer) #120 classes in the new model
         #self.model = tf.keras.Model(inputs=self.model.input, outputs=predictions)
         return predictions
+
+    def initial_train(self):
+        #freeze all inception_resent layers so that only the newly (randomly) generated layers can be trained
+        for layer in self.base_model.layers:
+            layer.trainable = False
+    
+        print("running initial train")
+        self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='rmsprop')        
+        self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=1, epochs=3) #up steps p epoch to 3k and epochs to ~4
+
+        for layer in self.model.layers[:780]:
+            layer.trainable = False
+        for layer in self.model.layers[780:]: #let's try only training the newly created final layers and leave the rest of
+            #inception resnet untouched
+            layer.trainable = True
+
+        return True
+
+
     
     def train_model(self):
 
@@ -117,23 +139,23 @@ class inception_classifier():
             #    sess.run(train_op)
             run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = False)
   
-
-            self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='adam', options=run_opts)
+            #from tensorflow.keras.optimizers import SGD
+            self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer=tf.keras.optimizers.SGD(lr=0.0001, momentum=0.9), options=run_opts)
 
             #save checkpoints of the model during training...
-            i = 0
+            #self.i = 0
             #del self.model
             #self.model = tf.keras.models.load_model('../models/model_ckpt_6.h5')
 
-            while(i<100): #each 'i' will be 1 epoch, 100 iterations in total
+            while(self.i<100): #each 'i' will be 1 epoch, 100 iterations in total
                             
 
                 #print("Running training for iterations: ", i*10, " to ", i*10+9)
-                print("Running training for epoch: ", i)
+                print("Running training for epoch: ", self.i)
                 self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=3000, epochs=1)
                 #self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=2, epochs=1)
 
-                file_name = '../models/model_ckpt_' + str(i) + '.h5'
+                file_name = '../models/model_ckpt_' + str(self.i) + '.h5'
                 self.model.save(file_name)
                 i+=1
 
