@@ -51,9 +51,6 @@ class inception_classifier():
         if(self.i == 0): #if on the first iteration of training
             self.initial_train() #train the last nodes on the new output classes
 
-
-        for i, layer in enumerate(self.model.layers):
-            print(i, layer.name)
         self.train_model() #train the entire model
 
         #evaulate the model
@@ -100,7 +97,7 @@ class inception_classifier():
     
         print("running initial train")
         self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='rmsprop')        
-        self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=1, epochs=3) #up steps p epoch to 3k and epochs to ~4
+        self.model.fit_generator(self.gen.generate_training_data(), steps_per_epoch=3000, epochs=3) #up steps p epoch to 3k and epochs to ~4
 
         for layer in self.model.layers[:780]:
             layer.trainable = False
