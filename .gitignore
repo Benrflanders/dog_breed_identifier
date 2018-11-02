@@ -5,3 +5,4 @@ data/included/*
 reports/
 data/raw/*
 !data/preprocessed_data/breed_list.csv
+models/*

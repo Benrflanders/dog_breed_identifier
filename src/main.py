@@ -12,6 +12,8 @@ def gen_test():
     X,y = next(gen.generate_training_data())
     #Y = np.array(X)
     #print("Y.dimensions(): ", np.shape(X))
+    print(X.shape)
+    print(y.shape)
 
 def pre_process():
     np.set_printoptions(threshold=np.nan) #numpy arrays will print the entire array now
@@ -25,3 +27,4 @@ def main_old():
 
     
 run()
+#gen_test()

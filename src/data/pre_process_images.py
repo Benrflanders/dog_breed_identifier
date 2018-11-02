@@ -8,7 +8,7 @@ from src.utils.general_utils import *
 
 
 '''
-Converts all images in the "raw" images folder to 500 x 500 images and saves them
+Converts all images in the "raw" images folder to 224 x 224 images and saves them
 to the processed images folder. Images are either saved to train_images/ or
 test_images/ based upon their location in the 
 '''
@@ -58,7 +58,7 @@ def pre_process_images():
                 
                 
     print(file_count)
-    #convert each image to a 500 by 500 image using scaling
+    #convert each image to a 224 by 224 image using scaling
     #save to the proper folder: either train or test data folder
 
 #convert all images to grayscale vectors-- no longer used as NN will be using 500 x 500 x 3 images as input
@@ -78,19 +78,19 @@ def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
     
     width, height = image.size
     
-    if(width > 500 or height > 500): #if width is greater than 500 or the height is greater than 500
+    if(width > 224 or height > 224): #if width is greater than 500 or the height is greater than 500
         if(width > height): #determine which side length is greater
-            image_ratio = 500/width #determine ratio of old image to new image
+            image_ratio = 224/width #determine ratio of old image to new image
         else:
-            image_ratio = 500/height
+            image_ratio = 224/height
              
         width = int(width * image_ratio) #calculate new width
         height = int(height * image_ratio) #calculate new height
-        image = image.resize((500, height), resample=1) #scale image to 
+        image = image.resize((224, height), resample=1) #scale image to 
     
         width, height = image.size #refresh the width and height to make sure everything is still accurate
-        delta_h = 500 - height #calculate the amount of height padding
-        delta_w = 500 - width #calculate the amount of width padding -- should be 0
+        delta_h = 224 - height #calculate the amount of height padding
+        delta_w = 224 - width #calculate the amount of width padding -- should be 0
         padding = (delta_w//2, delta_h//2, delta_w-(delta_w//2), delta_h-(delta_h//2))
         image = ImageOps.expand(image, padding)
     
@@ -99,11 +99,11 @@ def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
     
     width, height = image.size
     #after neither size is greater than 500 or already scaled
-    if(width < 500 or height < 500): #if either dimension is less than 500 padding is added
+    if(width < 224 or height < 224): #if either dimension is less than 500 padding is added
         #add padding to the height and width to change the image dimensions to 500 x 500 x 3
         width, height = image.size #refresh the width and height to make sure everything is still accurate
-        delta_h = 500 - height #calculate the amount of height padding
-        delta_w = 500 - width #calculate the amount of width padding -- should be 0
+        delta_h = 224 - height #calculate the amount of height padding
+        delta_w = 224 - width #calculate the amount of width padding -- should be 0
         padding = (delta_w//2, delta_h//2, delta_w-(delta_w//2), delta_h-(delta_h//2))
         image = ImageOps.expand(image, padding)
     
@@ -113,7 +113,7 @@ def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
     image_id = image_id.split('.')[0]
 
     width, height = image.size
-    if(width != 500 or height != 500):
+    if(width != 224 or height != 224):
         print("something went wrong")
     
     #save the image to the output_dir with the same id
