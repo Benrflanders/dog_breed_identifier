@@ -1,3 +1,7 @@
 data/included
 data/preprocessed_data
+data/processed/*
+data/included/* 
+reports/
+data/raw/*
 !data/preprocessed_data/breed_list.csv

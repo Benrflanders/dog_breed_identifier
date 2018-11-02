@@ -32,7 +32,7 @@ class generator():
     #yield a batch of training data
     def generate_training_data(self):
         #get from train_list.mat
-        os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+        #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
         file_list = os.listdir('../data/processed/train_images/')
         shuffle(file_list)
     
@@ -42,6 +42,9 @@ class generator():
         counter = 0 #number of files add so far
         index = 0 #index in the current file list
         while True:
+            if(counter == 0):
+                X = []
+                y = []
             
             #the end of the current list order is reached
             if(index == len(file_list)): 
@@ -63,6 +66,11 @@ class generator():
             counter += 1 
             index += 1
             if((counter % self.batch_size) == 0):
+                counter = 0
+                #X = np.array(X)
+                #X = np.reshape(X, [self.batch_size, 500,500, 3])
+                X = np.vstack(X)
+                y = np.vstack(y)
                 yield X, y
                 X = []
                 y = []
@@ -71,9 +79,9 @@ class generator():
     #yield a batch of training data
     def generate_testing_data(self):
         #get from train_list.mat
-        os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
+        #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
         file_list = os.listdir('../data/processed/test_images/')
-        self.shuffle(file_list)
+        self.shuffle_data(file_list)
     
         X = []
         y = []
@@ -102,6 +110,8 @@ class generator():
             counter += 1 
             index += 1
             if((counter % self.batch_size) == 0):
+                X = np.vstack(X)
+                y = np.vstack(y)
                 yield X, y
                 X = []
                 y = []

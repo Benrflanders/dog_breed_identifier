@@ -164,4 +164,32 @@ def get_num_training_files_per_breed(breed_list):
     return breed_occur
 
 
+def get_breed_from_output(output_list):
+    
+    top_index = 0
+    second_index = 0
+    third_index = 0
+    i = 0
+    
+    while(i<120):
+        if(output_list[i]>output_list[top_index]):
+            third_index = second_index
+            second_index = top_index
+            top_index = i
+            
+        elif(output_list[i]>output_list[second_index]):
+            third_index = second_index
+            second_index = i
+            
+        elif(output_list[i]>output_list[third_index]):
+            third_index = i
+            
+        i+=1
+
+    breed_list = '../data/processed/breed_list.csv'
+    breed_labels = populate_breeds(breed_list)
+    print("Top: ", breed_labels[top_index])
+    print("Second: ", breed_labels[second_index])
+    print("Third: ", breed_labels[third_index])
+    return breed_labels[top_index], breed_labels[second_index], breed_labels[third_index]
 
