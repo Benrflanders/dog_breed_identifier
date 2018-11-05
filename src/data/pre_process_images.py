@@ -108,7 +108,7 @@ def normalize_image(file_name, original_dir, short_filename, output_dir="../data
     image = Image.open(file)
     
     image = image.crop((xmin, ymin, xmax, ymax))
-
+    
 
     #  if width is under 500 add padding to make the image 500 x 500
     #  if height is under 500 add padding to make the image 500 x 500
