@@ -3,14 +3,16 @@ import sys
 sys.path.append('..')
 from PIL import Image, ImageOps
 from scipy.io import loadmat
+import re
 
 from src.utils.general_utils import *
 
 
 '''
-Converts all images in the "raw" images folder to 224 x 224 images and saves them
+Converts all images in the "raw" images folder to cropped images based on annotations folder then to 
+224 x 224 images and saves them
 to the processed images folder. Images are either saved to train_images/ or
-test_images/ based upon their location in the 
+test_images/ based upon their location in the .mat files
 '''
 def pre_process_images():
     #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
@@ -26,7 +28,6 @@ def pre_process_images():
     
     #for each folder
     raw_folders_list = os.listdir(raw_img_dir)
-    print(raw_folders_list)
     for folder in raw_folders_list:
         if(folder[0] != '.'):
             curr_dir = raw_img_dir + folder
@@ -37,15 +38,20 @@ def pre_process_images():
             for file in curr_sub_folder:
                 full_filename = curr_dir + '/' + file
                 filename = full_filename.split('/')[4:]
-                filename = filename[0] + '/' + filename[1]
+                filename = filename[0] + '/' + filename[1] 
+
+                print("Full filename: ", filename)
+                print("curr dir: ", curr_dir)
+
+
                 if(is_training_data(filename)):
                     output_dir = train_images_dir
-                    normalize_image(full_filename, curr_dir, output_dir=output_dir)
+                    normalize_image(full_filename, curr_dir, filename, output_dir=output_dir)
                     file_count+= 1
 
                 elif(is_testing_data(filename)):
                     output_dir = test_images_dir
-                    normalize_image(full_filename, curr_dir, output_dir=output_dir)
+                    normalize_image(full_filename, curr_dir, filename, output_dir=output_dir)
                     file_count += 1
 
                 else:
@@ -61,16 +67,49 @@ def pre_process_images():
     #convert each image to a 224 by 224 image using scaling
     #save to the proper folder: either train or test data folder
 
-#convert all images to grayscale vectors-- no longer used as NN will be using 500 x 500 x 3 images as input
-def normalize_image(file_name, original_dir,output_dir="../data/interim/"):
+'''
+returns x min, y min, x max, and y max of the bounding box corresponding to 
+a given file
+'''
+def get_box(file_name):
+    ano_loc = ('../data/raw/Annotation/' + file_name)
+    ano_loc = ano_loc[:-4]
+    xmin,ymin,xmax,ymax = [0,0,0,0]
+
+
+    file = open(ano_loc, "r")
+
+    for line in file:
+        line = re.split('<|>', line) #split on multiple delimiters using regex
+        if(line[1] == 'xmin'):
+            xmin = int(line[2])
+        if(line[1] == 'ymin'):
+            ymin = int(line[2])
+        if(line[1] == 'xmax'):
+            xmax = int(line[2])
+        if(line[1] == 'ymax'):
+            ymax = int(line[2])
+    print('dimensions: ', xmin,' ', ymin, ' ', xmax,' ', ymax)
+    return xmin, ymin, xmax, ymax
+
+
+
+
+#convert all images to 224 x 224 x 3 images and crop to the images bounding box
+def normalize_image(file_name, original_dir, short_filename, output_dir="../data/interim/"):
     #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
 
     file = file_name #store the file name and location  
+
+    #get the dimensions of the bounding box for each image
+    xmin, ymin, xmax, ymax = get_box(short_filename)
+
+
     image = Image.open(file)
     
-    #scale the image to 500 x 500 x 3
-    
-    
+    image = image.crop((xmin, ymin, xmax, ymax))
+
+
     #  if width is under 500 add padding to make the image 500 x 500
     #  if height is under 500 add padding to make the image 500 x 500
     #  if either dimension > 500 scale down to get one dimension == to 500
