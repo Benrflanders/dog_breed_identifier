@@ -12,12 +12,12 @@ class generator():
     def __init__(self, batch_size=1, number_of_images=20580):
         self.batch_size = batch_size #optional
 
-        self.BREED_LIST = 'H:/Dog_Breed_project/processed/breed_list.csv'
+        self.BREED_LIST = 'E:/Dog_Breed_project/processed/breed_list.csv'
         #self.train_dir = '../data/processed/train_images/'
-        self.train_dir = 'H:/Dog_Breed_project/processed/train_images/'
-        self.test_dir = 'H:/Dog_Breed_project/processed/test_images/'
-        self.train_list = 'H:/Dog_Breed_project/train_list.mat'
-        self.test_list = 'H:/Dog_Breed_project/test_list.mat'
+        self.train_dir = 'E:/Dog_Breed_project/processed/train_images/'
+        self.test_dir = 'E:/Dog_Breed_project/processed/test_images/'
+        self.train_list = 'E:/Dog_Breed_project/train_list.mat'
+        self.test_list = 'E:/Dog_Breed_project/test_list.mat'
 
         #prepare the breed list array
         self.labels = populate_breeds(self.BREED_LIST) #get the list of all dog breeds
@@ -34,7 +34,7 @@ class generator():
     def generate_training_data_batch(self):
         #get from train_list.mat
         #os.chdir('/Users/benflanders/Documents/github/kaggle_dog_breed_identifier/src')
-        file_list = os.listdir('H:/Dog_Breed_project/processed/train_images/')
+        file_list = os.listdir('E:/Dog_Breed_project/processed/train_images/')
         shuffle(file_list)
     
         X = []

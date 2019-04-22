@@ -7,6 +7,7 @@ batch_size = 10
 def run():
     model = inception.inception_classifier()
 
+#test the input and output of what the generator will send to the training
 def gen_test():
     gen = generator.generator(10)
     X,y = next(gen.generate_training_data())
@@ -19,7 +20,6 @@ def pre_process():
     np.set_printoptions(threshold=np.nan) #numpy arrays will print the entire array now
     pre_processor.pre_process_images()
 
-    
 
 def main_old():
    pre_process()

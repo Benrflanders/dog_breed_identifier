@@ -188,7 +188,7 @@ def get_breed_from_output(output_list):
 
     breed_list = '../data/processed/breed_list.csv'
     breed_labels = populate_breeds(breed_list)
-    print("Top: ", breed_labels[top_index])
+    print("First: ", breed_labels[top_index])
     print("Second: ", breed_labels[second_index])
     print("Third: ", breed_labels[third_index])
     return breed_labels[top_index], breed_labels[second_index], breed_labels[third_index]

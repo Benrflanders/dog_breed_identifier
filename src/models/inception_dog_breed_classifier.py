@@ -13,14 +13,15 @@ import utils.general_utils as utils
 class inception_classifier():
     def __init__(self):
 
-        self.train = False
+        self.train = True
         self.test = True
         self.load_model = True
-        #basic parameters
+        
+        #basic parameters - change these to fit the training data
         self.image_size = 224
         self.batch_size = 128
         self.num_classes = 120
-        self.i = 6
+        self.i = 0
         #self.is_training = tf.placeholder(tf.bool)
 
         self.EPOCHS = 25
@@ -56,12 +57,6 @@ class inception_classifier():
         if(self.test):
             self.evaluate_model()
 
-        #test a single image
-        #self.use_model()
-
-        #save the model
-        #self.save_model()
-
         quit()
         
             
@@ -90,10 +85,6 @@ class inception_classifier():
         #self.model = tf.keras.Model(inputs=self.model.input, outputs=predictions)
         return predictions
 
-
-
-
-
     def initial_train(self):
         #freeze all inception_resent layers so that only the newly (randomly) generated layers can be trained
         for layer in self.base_model.layers:
@@ -108,26 +99,21 @@ class inception_classifier():
             layer.trainable = True
 
         self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer='rmsprop')
-        self.model.fit_generator(self.gen.generate_training_data_batch(), steps_per_epoch=94, epochs=3) #up steps p epoch to 3k and epochs to ~4                            
+        self.model.fit_generator(self.gen.generate_training_data_batch(), steps_per_epoch=94, epochs=3) #up steps per epoch to 3k and epochs to ~4                            
+
+        #save the model
         file_name = '../models/model_ckpt_' + str(self.i) + '.h5'
         self.model.save(file_name)
+        
+        #evaluate the newly saved model
+        self.evaluate_model()
 
         return True
               
     
-    
     def train_model(self):
 
-        #self.model = tf.keras.Model(inputs=self.model.input, output=self.predictions)
-
-        #training configurations that worked on my desktop -- see specs report
-        #config = tf.ConfigProto(allow_soft_placement=True)
-        #config.gpu_options.allocator_type = 'BFC'
-        #config.gpu_options.per_process_gpu_memory_fraction = 0.40
-        #config.gpu_options.allow_growth = True
-
-        #tf.reset_default_graph()
-        print("about to start training :D")
+        print("about to start training")
         
         with tf.Session() as sess:
             writer = tf.summary.FileWriter("../Reports/log/", sess.graph)
@@ -146,18 +132,17 @@ class inception_classifier():
             if(self.i > 0):
                 del self.model
                 file_name = '../models/model_ckpt_' + str(self.i) + '.h5'
-                self.model = tf.keras.models.load_model(file_named, compile=False)
+                self.model = tf.keras.models.load_model(file_name, compile=False)
                 self.model.compile(loss=tf.keras.losses.categorical_crossentropy, optimizer=tf.keras.optimizers.SGD(lr=0.01, momentum=0.9), options=run_opts)
 
             for layer in self.model.layers[:780]:
-                layer.trainable = False
+                layer.trainable = True
             for layer in self.model.layers[780:]: #let's try only training the newly created final layers and leave the rest of
                 #inception resnet untouched
                 layer.trainable = True
                 
-            while(self.i<=100): #each 'i' will be 1 epoch, 100 iterations in total
-                            
-
+            while(self.i<=1): #each 'i' will be 1 epoch, 100 iterations in total
+                
                 #print("Running training for iterations: ", i*10, " to ", i*10+9)
                 print("Running training for epoch: ", self.i)
                 self.model.fit_generator(self.gen.generate_training_data_batch(), steps_per_epoch=94, epochs=1)
@@ -173,11 +158,11 @@ class inception_classifier():
 
         print("about to start testing :D")
         del self.model
-        #self.model = tf.keras.models.load_model('../models/model_ckpt_' + str(self.i) + '.h5')
         self.model = tf.keras.models.load_model('../models/model_ckpt_' +  str(self.i) + '.h5')
+
         total_correct_predictions = 0
         i = 0
-        while(i< 67):
+        while(i< 1):
             X,y = next(self.gen.generate_training_data_batch())
             classification = self.model.predict(X, batch_size=self.batch_size) #get a batch of predictions
 
