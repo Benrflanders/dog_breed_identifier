@@ -104,7 +104,7 @@ steps_per_epoch=tf.ceil(get_image_count()/BATCH_SIZE).numpy()
 
 model.fit(ds, epochs=1, steps_per_epoch=3)
 
-
+model.save('../models/dog_vision.h5')
 
 #used for measuring the performance of our datasets
 def timeit(ds, batches=2*steps_per_epoch+1):
